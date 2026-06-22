@@ -1,0 +1,44 @@
+services:
+  db:
+    image: mysql:8.0
+    container_name: modish2pool_db
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: modish2pool_db
+      MYSQL_USER: modish2pool_user
+      MYSQL_PASSWORD: modish2pool_pass
+      MYSQL_ROOT_PASSWORD: modish2pool_root_pass
+    volumes:
+      - db_data:/var/lib/mysql
+    networks:
+      - modish2pool_network
+
+  wordpress:
+    image: wordpress:latest
+    container_name: modish2pool_wordpress
+    restart: unless-stopped
+    depends_on:
+      - db
+    ports:
+      - "8083:80"
+    environment:
+      WORDPRESS_DB_HOST: db:3306
+      WORDPRESS_DB_NAME: modish2pool_db
+      WORDPRESS_DB_USER: modish2pool_user
+      WORDPRESS_DB_PASSWORD: modish2pool_pass
+      WORDPRESS_TABLE_PREFIX: wp_
+    volumes:
+      - wordpress_data:/var/www/html
+      - ./themes:/var/www/html/wp-content/themes/modish2pool
+      - ./plugins:/var/www/html/wp-content/plugins
+      - ./uploads:/var/www/html/wp-content/uploads
+    networks:
+      - modish2pool_network
+
+volumes:
+  db_data:
+  wordpress_data:
+
+networks:
+  modish2pool_network:
+    driver: bridge
